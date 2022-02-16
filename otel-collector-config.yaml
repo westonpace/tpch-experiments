@@ -1,0 +1,45 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: "0.0.0.0:4318"
+        cors:
+          allowed_origins:
+            - "*"
+
+processors:
+  batch:
+
+exporters:
+  logging:
+  jaeger:
+    endpoint: jaeger-all-in-one:14250
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: 0.0.0.0:8889
+  parquet:
+    path: /var/output/log.parquet
+
+service:
+  pipelines:
+    traces:
+      receivers:
+        - otlp
+      processors:
+        - batch
+      exporters:
+        - logging
+        - jaeger
+        - parquet
+    metrics:
+      receivers:
+        - otlp
+      processors:
+        - batch
+      exporters:
+        - logging
+        - prometheus
+        - parquet
